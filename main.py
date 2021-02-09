@@ -163,7 +163,7 @@ def f_test_nextpage(test_pageup):
             pageup_link = test_pageup2.find("a").attrs['href']
             return (pageup_link)
         else:
-            return("")
+            return ""
 
     except ValueError:
         print("pas de page supplémentaire ! rubrique suivante...")
@@ -209,7 +209,31 @@ def f_catch_book_into_category(site_cible):
                 return(book_cat_links)
             except:
 
+def scrap_category_page(page_url):
+    """ 
+        return the list of books page's url for the given 
+        category page
+    """
+    try:
+        resp = requests.get(page_url)
+        
+    except Exception as error: #
+        pass   
+    resp.encoding = 'utf8'
+            
+    if not resp.ok:
 
+        raise Exception("url erreur 404") # resp.status ?
+         
+    soup = BeautifulSoup(resp, 'html.parser')
+    
+    #  catch_cat_bib = soup.find_all("div", {"class": "image_container"})
+    books_urls = [
+        a['href'].replace('../../..', page_url[:-10])for a in soup.select(".image_container > a")]
+
+    next_a = soup.select_one('.next > a')
+    
+    return books_urls, next_a["href"] if next_a else None
 
 """
 
@@ -251,9 +275,12 @@ results = soup.find_all("div", {"class": "item active"})
 
 #  f_read_writing_book_csv_file2(ma_ligne)
 book_cat_links = []
+list_cat_links = []
+list_all_cat =[]
+it = 1
 category_section = "mystery_3"
-page_index = "index.html"
-site_cible = site_cible + "catalogue/books/" + category_section + "/" + page_index
+init_page_index = "index.html"
+site_cible = site_cible + "catalogue/category/books/" + category_section + "/" + init_page_index
 book_cat_links = f_catch_book_into_category(site_cible)
 
 # boot_cat_link catch the link of book into a category to scrap information
@@ -261,20 +288,34 @@ book_cat_links = f_catch_book_into_category(site_cible)
 print(len(book_cat_links))
 #  print (book_cat_links)
 i = 0
+while True:
 
+    books_list, next_page_url = scrap_category_page(url)
+    if not next_page_url:
+        break
 
 # def f_iterativ_link_catch():
+
+
 """
-"""
-for i in range(len(book_cat_links)):
-    #  print(i)
-    book_link_item = book_cat_links[i]
-    #  print(book_link_item)
 
-    book_writer = f_scrap_my_Book(book_link_item)
-    #  print(book_writer)
-    f_read_writing_book_csv_file2(book_writer)
-    i += 1
+for i in range(len(list_cat_links)):
+    while it > 0:
+        (book_cat_links, it) = f_catch_book_into_category(site_cible)
+        
+    item_page_cat = list_cat_links[i]
+
+    for j in range(len(book_cat_links)):
+        #  print(i)
+        book_link_item = book_cat_links[j]
+        #  print(book_link_item)
+
+        book_writer = f_scrap_my_Book(book_link_item)
+        #  print(book_writer)
+        f_read_writing_book_csv_file2(book_writer)
+        j += 1
+    i +=1
 
 
+    """
        
