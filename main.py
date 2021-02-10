@@ -161,53 +161,30 @@ def f_test_nextpage(test_pageup):
 
         if test_pageup2 != "" or not None:
             pageup_link = test_pageup2.find("a").attrs['href']
-            return (pageup_link)
+            return pageup_link
         else:
             return ""
 
     except ValueError:
         print("pas de page supplémentaire ! rubrique suivante...")
 
-"""
-def f_next_construct_link (page_up_index):
-   
-#concatenation of name of page index into a library
 
-   
-    test = 10
-"""
-
-def f_catch_book_into_category(site_cible):
-    """
-     catch books links into the category page
-
+def new_next_page_link(next_url, next_page):
     """
 
-    url_cat = "http://books.toscrape.com/catalogue/category/books/mystery_3/index.html"
-    response_url_cat = requests.get(url_cat)
-    response_url_cat_text = response_url_cat.text
-    if response_url_cat.ok:
-        book_cat_links = []
-        book_cat_soup = BeautifulSoup(response_url_cat_text, 'html.parser')
-        catch_cat_bib = book_cat_soup.find_all("div", {"class": "image_container"})
+clean the url of the end to start while a "/" found
+concatenation the "next page name" 
+   
+"""
+i = 0
+for i in range(len(next_url)):
+    car = next_url[-i]
+    if car == "/":
+        new_next_url = next_url[:-i] + next_page + ".html"
+        break
+    i += 1
+return new_next_url
 
-        i = 0
-        # if 
-        for ccb in catch_cat_bib:
-            a = ccb.find('a')  #  ("div",{"class": "item active"})
-            i += 1
-            link = "catalogue/" + a['href'][9:]
-            #  print(site_cible)
-            book_cat_links.append(site_cible[:26] + link)
-    #  test_pageup = f_test_nextpage(response_url_cat_text)
-        if i == 20:
-            try:
-                test_pageup = f_test_nextpage(book_cat_soup)
-                if test_pageup != "":
-                    tesst = 10
-    #  print(len(book_cat_links))
-                return(book_cat_links)
-            except:
 
 def scrap_category_page(page_url):
     """ 
@@ -281,18 +258,26 @@ it = 1
 category_section = "mystery_3"
 init_page_index = "index.html"
 site_cible = site_cible + "catalogue/category/books/" + category_section + "/" + init_page_index
-book_cat_links = f_catch_book_into_category(site_cible)
+
 
 # boot_cat_link catch the link of book into a category to scrap information
 #  in the book page
 print(len(book_cat_links))
 #  print (book_cat_links)
 i = 0
-while True:
 
-    books_list, next_page_url = scrap_category_page(url)
+while True:
+    next_page_url =""
+    books_list, next_page_url = scrap_category_page(site_cible)
+    
+    site_cible = new_next_page_link(site_cible, next_page_url)
+
     if not next_page_url:
         break
+    else:
+        # on prend url refaite  avec next_page_url
+
+
 
 # def f_iterativ_link_catch():
 
