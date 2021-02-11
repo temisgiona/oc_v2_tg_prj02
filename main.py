@@ -9,10 +9,8 @@ def my_soup(website_target):
 funtion to create the soup with webiste target in argument
 choose the link to scrap
 """
-    response_book = requests.get(website_target)
-    response_book_txt = response_book.text
-      
-    soup = BeautifulSoup(response_book_txt, 'html.parser')
+    resp = requests.get(book_url)
+    soup = BeautifulSoup(resp.text, 'html.parser')
 
     return soup
 
@@ -71,11 +69,6 @@ def f_scrap_my_Book(book_target):
     review_rating_text_number = f_conversion_rating(review_rating_text_number)
 #  print('rating ' + review_rating_text_number)
 
-#  <a href="/catalogue/while-you-were-mine_97/reviews/">
-
-    product_url = book_target
-#  print(product_url)
-
     ma_ligne = {}
     ma_ligne["product page url"] = book_target
     ma_ligne["title"] = title
@@ -90,17 +83,14 @@ def f_scrap_my_Book(book_target):
 
     #   print(ma_ligne)
 
-    test_w = book_target + ";" + title + ";" + upc_str + ";"
-    test_w = test_w + category + ";" + number_available_str + ";"
-    test_w = test_w + review_rating_text_number + ";" + image_url + ";"
-    test_w = test_w + ";" + price_incl_tax_str + price_excl_tax_str + ";"
-    test_w = test_w + product_description
-    #  print(test_w)
-    return test_w
-    print(len(test_w))
-
-    #  f_read_writing_book_csv_file2(test_w)  a conserver
-    #  print(test_w)
+    book_info = book_target + ";" + title + ";" + upc_str + ";"
+    book_info = book_info + category + ";" + number_available_str + ";"
+    book_info = book_info + review_rating_text_number + ";" + image_url + ";"
+    book_info = book_info + ";" + price_incl_tax_str + price_excl_tax_str + ";"
+    book_info = book_info + product_description
+    
+    return book_info
+    print(len(book_info))
 
 
 def f_conversion_rating(v_review_rating):
@@ -145,7 +135,7 @@ def f_read_writing_book_csv_file2(mon_book_text):
 function to read & write the book informations into a csv file.
 the csv separator is a ";" due to the string imported.
     """
-    my_csv_file = 'C:\\projet_OPC\\oc02\\oc_v2_tg_prj02\\data\\scrap_book.csv'
+    my_csv_file = 'C:\\projet_OPC\\oc02\\oc_v2_tg_prj02\\data\\scrap_book_by_cat.csv'
     with open(my_csv_file, "a", encoding='utf-8', newline='') as mon_book:
         mon_book_text_w = csv.writer(mon_book, delimiter=';')     
         mon_book_text_w.writerow([mon_book_text])
@@ -157,7 +147,6 @@ def f_test_nextpage(test_pageup):
     pageup_link = ""
     try:
         test_pageup2 = test_pageup.find_all("li", {"class": "next"})[0]
-        #  test_pageup3 = test_pageup2.find("a").attrs['href']
 
         if test_pageup2 != "" or not None:
             pageup_link = test_pageup2.find("a").attrs['href']
@@ -176,7 +165,7 @@ clean the url of the end to start while a "/" found
 concatenation the "next page name" 
    
 """
-    if not next_page :
+    if next_page:
         i = 0
         for i in range(len(next_url)):
             
@@ -201,7 +190,7 @@ def scrap_category_page(page_url):
     try:
         resp = requests.get(page_url)
         
-    except Exception as error: #
+    except Exception as error:
         pass   
     resp.encoding = 'utf8'
             
@@ -211,7 +200,6 @@ def scrap_category_page(page_url):
          
     soup = BeautifulSoup(resp, 'html.parser')
     
-    #  catch_cat_bib = soup.find_all("div", {"class": "image_container"})
     books_urls = [
         a['href'].replace('../../..', page_url[:-10])for a in soup.select(".image_container > a")]
 
@@ -232,44 +220,48 @@ to scrap a website http://books.toscrape.com/
     
 
 **********************************************************
-    """
+
 
 response = requests.get(site_cible)
 #response.enconding('utf8')
 response_book_link = site_cible + "/catalogue/sapiens-a-brief-history-of-humankind_996/index.html"
 response_book = requests.get(response_book_link)
 
-r_temp = response_book.text  
+r_temp = response_book.text
 #  choose the link to scrap
 
 soup = BeautifulSoup(r_temp, 'html.parser')
 
 
-"""
+
 ************************************************************
  results
 *************************************************************
 
  find results within product_page
-"""
+
 
 results = soup.find_all("div", {"class": "item active"})
 
 
 #  f_read_writing_book_csv_file2(ma_ligne)
+
+"""
 book_cat_links = []
 list_cat_links = []
 list_all_cat =[]
 site_cible = "http://books.toscrape.com/"
-category_section = "mystery_3"
 init_page_index = "index.html"
-site_cible = site_cible + "catalogue/category/books/" + category_section + "/" + init_page_index
 
+category_section = "sequential-art_5"
+site_cible = site_cible + "catalogue/category/books/" + category_section + "/" + init_page_index
 # boot_cat_link catch the link of book into a category to scrap information
 #  in the book page
 print(len(book_cat_links))
 #  print (book_cat_links)
 i = 0
+
+list_all_cat[scrap_category_list(site_cible_category_url)]
 
 while True:
     next_page_url = ""
@@ -279,38 +271,38 @@ while True:
     if not site_cible:
         break
     else:
-        books_list, next_page_url = scrap_category_page(site_cible)
+        books_list_url, next_page_url = scrap_category_page(site_cible)
+        list_cat_book_url.extend(books_list_url)
         
     if not next_page_url:
         break
     else:
         # on prend url refaite de avec next_page_url
-        site_cible, next_page_url = new_next_page_link(site_cible, next_page_url)
+        site_cible = new_next_page_link(site_cible, next_page_url)
 
-print("c'est la fin")
+print("c'est la fin ")
 
 # def f_iterativ_link_catch():
 
 
 """
-
 for i in range(len(list_cat_links)):
     while it > 0:
         (book_cat_links, it) = f_catch_book_into_category(site_cible)
         
     item_page_cat = list_cat_links[i]
+    """
 
-    for j in range(len(book_cat_links)):
-        #  print(i)
-        book_link_item = book_cat_links[j]
-        #  print(book_link_item)
+for j in range(len(list_cat_book_url)):
+    #  print(i)
+    book_link_item = list_cat_book_url[j]
+    #  print(book_link_item)
 
-        book_writer = f_scrap_my_Book(book_link_item)
-        #  print(book_writer)
-        f_read_writing_book_csv_file2(book_writer)
-        j += 1
+    book_writer = f_scrap_my_Book(book_link_item)
+    #  print(book_writer)
+    f_read_writing_book_csv_file2(book_writer)
+    j += 1
     i +=1
 
-
-    """
+print("c'est la fin " + str(len(list_cat_book_url)))
        
