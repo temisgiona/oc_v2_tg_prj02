@@ -176,14 +176,21 @@ clean the url of the end to start while a "/" found
 concatenation the "next page name" 
    
 """
-i = 0
-for i in range(len(next_url)):
-    car = next_url[-i]
-    if car == "/":
-        new_next_url = next_url[:-i] + next_page + ".html"
-        break
-    i += 1
-return new_next_url
+    if not next_page :
+        i = 0
+        for i in range(len(next_url)):
+            
+            car = next_url[-i]
+            if car == "/":
+                j = i-1
+        
+                new_next_url = next_url[:-j] + next_page
+                break     
+            i += 1
+        return new_next_url if new_next_url else None
+    
+    else:
+        return None, None
 
 
 def scrap_category_page(page_url):
@@ -227,12 +234,11 @@ to scrap a website http://books.toscrape.com/
 **********************************************************
     """
 
-
-site_cible = "http://books.toscrape.com/"
 response = requests.get(site_cible)
+#response.enconding('utf8')
 response_book_link = site_cible + "/catalogue/sapiens-a-brief-history-of-humankind_996/index.html"
 response_book = requests.get(response_book_link)
-response_book_txt = "C:\\projet_OPC\\oc02\\oc_v2_tg_prj02\\bookstoscrap.com.html"
+
 r_temp = response_book.text  
 #  choose the link to scrap
 
@@ -254,11 +260,10 @@ results = soup.find_all("div", {"class": "item active"})
 book_cat_links = []
 list_cat_links = []
 list_all_cat =[]
-it = 1
+site_cible = "http://books.toscrape.com/"
 category_section = "mystery_3"
 init_page_index = "index.html"
 site_cible = site_cible + "catalogue/category/books/" + category_section + "/" + init_page_index
-
 
 # boot_cat_link catch the link of book into a category to scrap information
 #  in the book page
@@ -267,17 +272,22 @@ print(len(book_cat_links))
 i = 0
 
 while True:
-    next_page_url =""
-    books_list, next_page_url = scrap_category_page(site_cible)
+    next_page_url = ""
     
-    site_cible = new_next_page_link(site_cible, next_page_url)
-
+    
+    #  site_cible, next_page_url = new_next_page_link(site_cible, next_page_url)
+    if not site_cible:
+        break
+    else:
+        books_list, next_page_url = scrap_category_page(site_cible)
+        
     if not next_page_url:
         break
     else:
-        # on prend url refaite  avec next_page_url
+        # on prend url refaite de avec next_page_url
+        site_cible, next_page_url = new_next_page_link(site_cible, next_page_url)
 
-
+print("c'est la fin")
 
 # def f_iterativ_link_catch():
 
