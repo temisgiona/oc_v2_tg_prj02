@@ -248,7 +248,7 @@ results = soup.find_all("div", {"class": "item active"})
 
 """
 book_cat_links = []
-list_cat_links = []
+list_cat_book_url = []
 list_all_cat =[]
 site_cible = "http://books.toscrape.com/"
 init_page_index = "index.html"
