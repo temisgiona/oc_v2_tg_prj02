@@ -2,17 +2,27 @@
 import requests
 from bs4 import BeautifulSoup
 import csv
+import re
+import os
 
-
-def my_soup(website_target):
+def my_soup(page_url):
     """
 funtion to create the soup with webiste target in argument
 choose the link to scrap
 """
-    resp = requests.get(book_url)
-    soup = BeautifulSoup(resp.text, 'html.parser')
+    try:
+        resp = requests.get(page_url)
+        r_status = resp.status_code
+        resp.encoding = 'utf8'
+        
+    except Exception as error:
+        print('erreur sur le lien')
+        r_status = 505  
+    soup = ""
+    if r_status == 200:
+        soup = BeautifulSoup(resp.text, 'html.parser')
 
-    return soup
+    return soup if soup else None, r_status
 
 
 def f_scrap_my_Book(book_target):
@@ -30,9 +40,10 @@ def f_scrap_my_Book(book_target):
     image_url= ok
 
     """
-    soup = my_soup(book_target)
+    soup, r_status = my_soup(book_target)
     #  print(soup)
-    title = (soup.title.string)[5:-28]  # nettoyage de la 28 lettre de droite
+    title_ori = (soup.title.string)[5:-28]
+    title = title_ori.strip("/n")
 #  print(' title ' + title)
 
     number_available = soup.find("div", {"class": "col-sm-6 product_main"}).find("p", {"class": "instock availability"}).text[25:27]
@@ -52,22 +63,27 @@ def f_scrap_my_Book(book_target):
     price_excl_tax_str = str(price_excl_tax)
 #  print("price excl tax " + price_excl_tax)
 
-    product_description = soup.find_all('p')[3].text
+    product_description_ori = soup.find_all('p')[3].text
+    product_description = product_description_ori.strip('\n')
 #  print(product_description)
 
-    category = soup.find_all('li')[2].text[1:]
+    category_ori = soup.find_all('li')[2].text[1:]
+    category = category_ori.strip('\n')
 #  print("category " + category)
 
     image_url = soup.find_all('img')[0]
     image_url = image_url.attrs['src']
-    image_url = site_cible + image_url[5:]
+    image_url = book_target[:26] + image_url[5:]
 #  print(image_url) 
 
-    review_rating = soup.find_all(attrs={"star-rating"})[0]
-    review_rating_text = str(review_rating)
-    review_rating_text_number = f_find_end_balise(review_rating_text)
-    review_rating_text_number = f_conversion_rating(review_rating_text_number)
+    #  review_rating = (soup.find_all(attrs={"star-rating"})[0])['class'][1]
+    review_rating = soup.find('p', attrs={"star-rating"})['class'][1]
+    
+    review_rating_text_number = conversion_rating2(review_rating)
 #  print('rating ' + review_rating_text_number)
+
+    product_url = book_target
+#  print(product_url)
 
     ma_ligne = {}
     ma_ligne["product page url"] = book_target
@@ -80,17 +96,15 @@ def f_scrap_my_Book(book_target):
     ma_ligne["price incl tax"] = price_incl_tax_str
     ma_ligne["price excl tax"] = price_excl_tax_str
     ma_ligne["product description"] = product_description
-
     #   print(ma_ligne)
 
     book_info = book_target + ";" + title + ";" + upc_str + ";"
     book_info = book_info + category + ";" + number_available_str + ";"
     book_info = book_info + review_rating_text_number + ";" + image_url + ";"
-    book_info = book_info + ";" + price_incl_tax_str + price_excl_tax_str + ";"
-    book_info = book_info + product_description
-    
-    return book_info
-    print(len(book_info))
+    book_info = book_info + ";" + price_incl_tax_str + ";"
+    book_info = book_info + price_excl_tax_str + ";" + product_description
+
+    return book_info, category, image_url
 
 
 def f_conversion_rating(v_review_rating):
@@ -98,26 +112,12 @@ def f_conversion_rating(v_review_rating):
 example  : dectecting the word five , if 'five' --> vrr =5
 the range is 0--> 5 
     """
-    if v_review_rating == "Zero":
-        vrr = "0"
-        return vrr
-    elif v_review_rating == "One":
-        vrr = "1"
-        return vrr
-    elif v_review_rating == "Two":
-        vrr = "2"
-        return vrr
-    elif v_review_rating == "Three":
-        vrr = "3"
-        return vrr
-    elif v_review_rating == "Four":
-        vrr = "4"
-        return vrr
-    elif v_review_rating == "Five":
-        vrr = "5"
-        return vrr
-    else:
-        print("valeur non reconnue !")
+    dict_rating = {"Zero":0, "One":1, "Two":2, "Three":3, "Four":4, "Five":5}
+    try:
+        vrr = dict_rating[v_review_rating]
+    except:
+        vrr = 0
+    return vrr
 
 
 def f_find_end_balise(ma_chaine):
@@ -128,6 +128,19 @@ def f_find_end_balise(ma_chaine):
     x = ma_chaine.find(k)
     y = ma_chaine[22:(x-1)]
     return y
+
+
+def directory_results(category):
+    """
+creating file file name with the directory location of the file
+
+    """
+    #  my_csv_dir = 'C:\\projet_OPC\\oc02\\oc_projet02\\data\\test\\'
+    my_csv_dir ='.\\data\\test\\'
+    my_csv_file_name = 'scrap_book_'
+    
+    result_file = my_csv_dir + my_csv_file_name + category + '.csv'
+    return result_file
 
 
 def f_read_writing_book_csv_file2(mon_book_text):
@@ -207,6 +220,14 @@ def scrap_category_page(page_url):
     
     return books_urls, next_a["href"] if next_a else None
 
+    def scrap_category_list(page_url):
+    """
+    return de list of categorys of books
+
+    """
+
+
+
 """
 
 project 02 of openclassrooms learning session
@@ -254,14 +275,14 @@ site_cible = "http://books.toscrape.com/"
 init_page_index = "index.html"
 
 category_section = "sequential-art_5"
-site_cible = site_cible + "catalogue/category/books/" + category_section + "/" + init_page_index
+site_cible_category_url = site_cible + "catalogue/category/books_1/" + category_section + "/" + init_page_index
 # boot_cat_link catch the link of book into a category to scrap information
 #  in the book page
 print(len(book_cat_links))
 #  print (book_cat_links)
 i = 0
 
-list_all_cat[scrap_category_list(site_cible_category_url)]
+list_all_cat = scrap_category_list(site_cible_category_url)]
 
 while True:
     next_page_url = ""
@@ -280,29 +301,15 @@ while True:
         # on prend url refaite de avec next_page_url
         site_cible = new_next_page_link(site_cible, next_page_url)
 
-print("c'est la fin ")
+    for j in range(len(list_cat_book_url)):
+        #  print(i)
+        book_link_item = list_cat_book_url[j]
+        #  print(book_link_item)
 
-# def f_iterativ_link_catch():
-
-
-"""
-for i in range(len(list_cat_links)):
-    while it > 0:
-        (book_cat_links, it) = f_catch_book_into_category(site_cible)
-        
-    item_page_cat = list_cat_links[i]
-    """
-
-for j in range(len(list_cat_book_url)):
-    #  print(i)
-    book_link_item = list_cat_book_url[j]
-    #  print(book_link_item)
-
-    book_writer = f_scrap_my_Book(book_link_item)
-    #  print(book_writer)
-    f_read_writing_book_csv_file2(book_writer)
-    j += 1
-    i +=1
+        book_writer = f_scrap_my_Book(book_link_item)
+        #  print(book_writer)
+        f_read_writing_book_csv_file2(book_writer)
+        j += 1
+        i += 1
 
 print("c'est la fin " + str(len(list_cat_book_url)))
-       
