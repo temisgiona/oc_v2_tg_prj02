@@ -227,89 +227,62 @@ def scrap_category_page(page_url):
     """
 
 
-
-"""
-
-project 02 of openclassrooms learning session
-this projet has for mission to developp an application 
-to scrap a website http://books.toscrape.com/
- first  operation :  choose a book's page and scrap  defined words
-*********************************************************
-                    initialisation of the path
-*********************************************************
-
+def main()
     
+    """
 
-**********************************************************
-
-
-response = requests.get(site_cible)
-#response.enconding('utf8')
-response_book_link = site_cible + "/catalogue/sapiens-a-brief-history-of-humankind_996/index.html"
-response_book = requests.get(response_book_link)
-
-r_temp = response_book.text
-#  choose the link to scrap
-
-soup = BeautifulSoup(r_temp, 'html.parser')
+    project 02 of openclassrooms learning session
+    this projet has for mission to developp an application 
+    to scrap a website http://books.toscrape.com/
+    first  operation :  choose a book's page and scrap  defined words
 
 
+        """
+    book_cat_links = []
+    list_cat_book_url = []
+    list_all_cat =[]
+    site_cible = "http://books.toscrape.com/"
+    init_page_index = "index.html"
 
-************************************************************
- results
-*************************************************************
+    category_section = "sequential-art_5"
+    site_cible_category_url = site_cible + "catalogue/category/books_1/" + category_section + "/" + init_page_index
+    # boot_cat_link catch the link of book into a category to scrap information
+    #  in the book page
+    print(len(book_cat_links))
+    #  print (book_cat_links)
+    i = 0
 
- find results within product_page
+    list_all_cat = scrap_category_list(site_cible_category_url)]
 
-
-results = soup.find_all("div", {"class": "item active"})
-
-
-#  f_read_writing_book_csv_file2(ma_ligne)
-
-"""
-book_cat_links = []
-list_cat_book_url = []
-list_all_cat =[]
-site_cible = "http://books.toscrape.com/"
-init_page_index = "index.html"
-
-category_section = "sequential-art_5"
-site_cible_category_url = site_cible + "catalogue/category/books_1/" + category_section + "/" + init_page_index
-# boot_cat_link catch the link of book into a category to scrap information
-#  in the book page
-print(len(book_cat_links))
-#  print (book_cat_links)
-i = 0
-
-list_all_cat = scrap_category_list(site_cible_category_url)]
-
-while True:
-    next_page_url = ""
-    
-    
-    #  site_cible, next_page_url = new_next_page_link(site_cible, next_page_url)
-    if not site_cible:
-        break
-    else:
-        books_list_url, next_page_url = scrap_category_page(site_cible)
-        list_cat_book_url.extend(books_list_url)
+    while True:
+        next_page_url = ""
         
-    if not next_page_url:
-        break
-    else:
-        # on prend url refaite de avec next_page_url
-        site_cible = new_next_page_link(site_cible, next_page_url)
+        
+        #  site_cible, next_page_url = new_next_page_link(site_cible, next_page_url)
+        if not site_cible:
+            break
+        else:
+            books_list_url, next_page_url = scrap_category_page(site_cible)
+            list_cat_book_url.extend(books_list_url)
+            
+        if not next_page_url:
+            break
+        else:
+            # on prend url refaite de avec next_page_url
+            site_cible = new_next_page_link(site_cible, next_page_url)
 
-    for j in range(len(list_cat_book_url)):
-        #  print(i)
-        book_link_item = list_cat_book_url[j]
-        #  print(book_link_item)
+        for j in range(len(list_cat_book_url)):
+            #  print(i)
+            book_link_item = list_cat_book_url[j]
+            #  print(book_link_item)
 
-        book_writer = f_scrap_my_Book(book_link_item)
-        #  print(book_writer)
-        f_read_writing_book_csv_file2(book_writer)
-        j += 1
-        i += 1
+            book_writer = f_scrap_my_Book(book_link_item)
+            #  print(book_writer)
+            f_read_writing_book_csv_file2(book_writer)
+            j += 1
+            i += 1
 
-print("c'est la fin " + str(len(list_cat_book_url)))
+    print("c'est la fin " + str(len(list_cat_book_url)))
+    
+    if __name__ == '__main__':
+    main()
