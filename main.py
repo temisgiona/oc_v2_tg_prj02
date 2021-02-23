@@ -240,6 +240,31 @@ def scrap_category_list(page_url):
     return category2
 
 
+def create_csv_file(my_csv_file):
+    """
+creating csv files by personalized name of files
+with head of columns
+initalisation with head of columns
+
+    """
+    entetes = [
+        "product_page_url",
+        "title",
+        "upc",
+        "category",
+        "number_available",
+        "review_rating",
+        "image_url",
+        "price_including_tax",
+        "price_excluding_tax",
+        "product_description"
+    ]
+    f = open(my_csv_file, 'w')
+    ligneEntete = ";".join(entetes) + "\n"
+
+    f.write(ligneEntete)
+    f.close()
+
 def main()
     
     """
