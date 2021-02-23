@@ -136,7 +136,7 @@ creating file file name with the directory location of the file
 
     """
     #  my_csv_dir = 'C:\\projet_OPC\\oc02\\oc_projet02\\data\\test\\'
-    my_csv_dir ='.\\data\\test\\'
+    my_csv_dir = '.\\data\\test\\'
     my_csv_file_name = 'scrap_book_'
     
     result_file = my_csv_dir + my_csv_file_name + category + '.csv'
@@ -165,7 +165,7 @@ def f_test_nextpage(test_pageup):
             pageup_link = test_pageup2.find("a").attrs['href']
             return pageup_link
         else:
-            return ""
+            return None
 
     except ValueError:
         print("pas de page supplémentaire ! rubrique suivante...")
@@ -200,31 +200,44 @@ def scrap_category_page(page_url):
         return the list of books page's url for the given 
         category page
     """
-    try:
-        resp = requests.get(page_url)
-        
-    except Exception as error:
-        pass   
-    resp.encoding = 'utf8'
-            
-    if not resp.ok:
-
-        raise Exception("url erreur 404") # resp.status ?
-         
-    soup = BeautifulSoup(resp, 'html.parser')
-    
+        soup, r_status = my_soup(page_url)
     books_urls = [
-        a['href'].replace('../../..', page_url[:-10])for a in soup.select(".image_container > a")]
+        a['href'].replace('../../../', page_url[:36])for a in 
+        soup.select(".image_container > a")]
 
     next_a = soup.select_one('.next > a')
     
     return books_urls, next_a["href"] if next_a else None
 
-    def scrap_category_list(page_url):
+
+def scrap_category_list(page_url):
     """
     return de list of categorys of books
 
     """
+    soup, r_status = my_soup(page_url)
+
+    category = soup.select('li > a')
+    category1 = [a['href'].replace('../', page_url[:45]) for a in category]
+    
+    i = 0
+    category2 = []
+    for i in range(len(category1)-1):
+        soup_1, statut_url = my_soup(category1[i])
+        #  print(category1[i])
+        #  print(i)
+        if statut_url != 200:
+            print(category1[i])
+            print("erreur sur lien " + str(i))
+            #  del(category1[i])
+        elif statut_url == 200:
+            category2.extend([category1[i]])   
+            
+        elif i == 0:
+            break
+        i += 1
+    #  next_a = soup.select_one('.next > a')
+    return category2
 
 
 def main()
