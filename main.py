@@ -323,35 +323,41 @@ def main()
     i = 0
 
     list_all_cat = scrap_category_list(site_cible_category_url)]
-
-    while True:
-        next_page_url = ""
-        
-        
-        #  site_cible, next_page_url = new_next_page_link(site_cible, next_page_url)
-        if not site_cible:
-            break
-        else:
-            books_list_url, next_page_url = scrap_category_page(site_cible)
-            list_cat_book_url.extend(books_list_url)
+    for i in range(len(list_all_cat)):
+        site_cible = list_all_cat[i]
+        while True:
+            next_page_url = None
             
-        if not next_page_url:
-            break
-        else:
-            # on prend url refaite de avec next_page_url
-            site_cible = new_next_page_link(site_cible, next_page_url)
+            if not site_cible:
+                break
+            else:
+                books_list_url, next_page_url = scrap_category_page(site_cible)
+                list_cat_book_url.extend(books_list_url)
+                
+            if not next_page_url:
+                break
+            else:
+                # on prend url refaite de avec next_page_url
+                site_cible = new_next_page_link(site_cible, next_page_url)
+        j=0 # initialisation  pour permttre l'initialisation du csv
+        f len(list_cat_book_url) > 1:
+            for j in range(len(list_cat_book_url)):
+                
+                book_link_item = list_cat_book_url[j]
+                #  print(book_link_item)
 
-        for j in range(len(list_cat_book_url)):
-            #  print(i)
-            book_link_item = list_cat_book_url[j]
-            #  print(book_link_item)
+                book_writer, category, image_url = f_scrap_my_Book(book_link_item)
+                #  print(book_writer)
 
-            book_writer = f_scrap_my_Book(book_link_item)
-            #  print(book_writer)
-            f_read_writing_book_csv_file2(book_writer)
-            j += 1
-            i += 1
+                download_picture(image_url)
+                my_file = directory_results(category)
+                create_csv_file(my_file)
 
+                f_read_writing_book_csv_file2(book_writer)
+                j += 1
+        i += 1
+        list_cat_book_url[:] = []
+        
     print("c'est la fin " + str(len(list_cat_book_url)))
     
     if __name__ == '__main__':
