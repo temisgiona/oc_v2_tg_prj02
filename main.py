@@ -265,6 +265,38 @@ initalisation with head of columns
     f.write(ligneEntete)
     f.close()
 
+
+    def download_picture(url, folder="image"):
+
+
+    """
+        download the picture file of the current book
+        choosing the directory
+        searching the name of the picture file
+        copying the file into the directory
+
+    """
+    try:
+        
+        #  os.chdir('C:\\projet_OPC\\oc02\\oc_projet02\\' + folder + '\\')
+        os.chdir('.\\' + folder + '\\')
+    except IOError:
+        pass
+        
+    i = 0
+    name = url
+    for i in range(len(url)):
+        
+        if url[-i] == "/":
+            name = url[-i+1:]
+            break
+    i += 1
+
+    with open(name, 'wb') as f:
+        im = requests.get(url)
+        f.write(im.content)
+        #  print('Writing: ', name)
+
 def main()
     
     """
