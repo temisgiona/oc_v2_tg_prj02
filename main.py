@@ -2,8 +2,8 @@
 import requests
 from bs4 import BeautifulSoup
 import csv
-import re
 import os
+
 
 def my_soup(page_url):
     """
@@ -78,8 +78,8 @@ def f_scrap_my_Book(book_target):
 
     #  review_rating = (soup.find_all(attrs={"star-rating"})[0])['class'][1]
     review_rating = soup.find('p', attrs={"star-rating"})['class'][1]
-    
-    review_rating_text_number = conversion_rating2(review_rating)
+    review_rating_text_number = conversion_rating(review_rating)
+
 #  print('rating ' + review_rating_text_number)
 
     product_url = book_target
@@ -112,7 +112,7 @@ def f_conversion_rating(v_review_rating):
 example  : dectecting the word five , if 'five' --> vrr =5
 the range is 0--> 5 
     """
-    dict_rating = {"Zero":0, "One":1, "Two":2, "Three":3, "Four":4, "Five":5}
+    dict_rating = {"Zero": "0", "One": "1", "Three": "3", "Four": "4", "Five": "5"}
     try:
         vrr = dict_rating[v_review_rating]
     except:
@@ -135,7 +135,6 @@ def directory_results(category):
 creating file file name with the directory location of the file
 
     """
-    #  my_csv_dir = 'C:\\projet_OPC\\oc02\\oc_projet02\\data\\test\\'
     my_csv_dir = '.\\data\\test\\'
     my_csv_file_name = 'scrap_book_'
     
@@ -143,16 +142,34 @@ creating file file name with the directory location of the file
     return result_file
 
 
-def f_read_writing_book_csv_file2(mon_book_text):
+def f_read_writing_book_csv_file(mon_book_text, my_csv_file):
     """
 function to read & write the book informations into a csv file.
 the csv separator is a ";" due to the string imported.
     """
-    my_csv_file = 'C:\\projet_OPC\\oc02\\oc_v2_tg_prj02\\data\\scrap_book_by_cat.csv'
     with open(my_csv_file, "a", encoding='utf-8', newline='') as mon_book:
         mon_book_text_w = csv.writer(mon_book, delimiter=';')     
         mon_book_text_w.writerow([mon_book_text])
 
+def read_writing_book_csv_file3(csv_file, ma_liste):
+    """
+    function to read & write the book informations into a csv file.
+ 
+    ma_ligne[] is a dictionnary 
+    the csv separator is a ";" due to the string imported.
+
+    """
+    abs_path = local_dir(csv_file)
+    
+    with open(abs_path, 'a', encoding='utf-8', newline='') as csvfile:
+    
+        writer = csv.DictWriter(
+            csvfile,
+            fieldnames=ma_liste.keys(),
+            delimiter=";"
+            )
+        writer.writeheader()
+        writer.writerow(ma_liste)
 
 def f_test_nextpage(test_pageup):
     """
@@ -353,7 +370,7 @@ def main()
                 my_file = directory_results(category)
                 create_csv_file(my_file)
 
-                f_read_writing_book_csv_file2(book_writer)
+                f_read_writing_book_csv_file(book_writer)
                 j += 1
         i += 1
         list_cat_book_url[:] = []
