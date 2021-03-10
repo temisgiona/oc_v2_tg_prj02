@@ -14,15 +14,16 @@ choose the link to scrap
         resp = requests.get(page_url)
         r_status = resp.status_code
         resp.encoding = 'utf8'
-        
+
     except Exception as error:
         print('erreur sur le lien')
-        r_status = 505  
+        r_status = 505
     soup = ""
     if r_status == 200:
         soup = BeautifulSoup(resp.text, 'html.parser')
 
     return soup if soup else None, r_status
+
 
 def local_dir(folder):
     """
@@ -37,7 +38,8 @@ def local_dir(folder):
     abs_path = os.path.join(root, rel_path)
     return abs_path
 
-def f_scrap_my_Book(book_target):
+
+def scrap_my_Book(book_target):
     """
     function to catch all information needed about the book page designed
     product_page_url=
@@ -86,15 +88,13 @@ def f_scrap_my_Book(book_target):
     image_url = soup.find_all('img')[0]
     image_url = image_url.attrs['src']
     image_url = book_target[:26] + image_url[5:]
-#  print(image_url) 
+#  print(image_url)
 
-    #  review_rating = (soup.find_all(attrs={"star-rating"})[0])['class'][1]
     review_rating = soup.find('p', attrs={"star-rating"})['class'][1]
     review_rating_text_number = conversion_rating(review_rating)
-
 #  print('rating ' + review_rating_text_number)
 
-    product_url = book_target
+#  product_url = book_target
 #  print(product_url)
 
     ma_ligne = {}
@@ -116,184 +116,146 @@ def f_scrap_my_Book(book_target):
     book_info = book_info + ";" + price_incl_tax_str + ";"
     book_info = book_info + price_excl_tax_str + ";" + product_description
 
-    return book_info, category, image_url, ma_ligne
+    return ma_ligne
 
 
 def conversion_rating(v_review_rating):
     """convert the word extract from rating review to a number more explicit
 example  : dectecting the word five , if 'five' --> vrr =5
-the range is 0--> 5 
+the range is 0--> 5
     """
-    dict_rating = {"Zero": "0", "One": "1", "Two": "2", "Three": "3", "Four": "4", "Five": "5"}
+    dict_rating = {
+        "Zero": "0",
+        "One": "1",
+        "Two": "2",
+        "Three": "3",
+        "Four": "4",
+        "Five": "5"
+        }
     try:
         vrr = dict_rating[v_review_rating]
     except:
         vrr = "0"
-        print ("the rating is missing or not found")
+        print("the rating is missing or not found")
     return vrr
 
 
-def f_find_end_balise(ma_chaine):
-
-    """ cherche la premiere occurence caractere designé d'une balise >
-    """
-    k = ">"
-    x = ma_chaine.find(k)
-    y = ma_chaine[22:(x-1)]
-    return y
-
-
-def directory_results(category):
+def directory_results(category, folder="data"):
     """
 creating file file name with the directory location of the file
 
     """
-    my_csv_dir = '.\\data\\test\\'
+    my_csv_dir = 'data\\test\\'
     my_csv_file_name = 'scrap_book_'
-    
+
     result_file = my_csv_dir + my_csv_file_name + category + '.csv'
     return result_file
 
 
-def f_read_writing_book_csv_file(mon_book_text, my_csv_file):
-    """
-function to read & write the book informations into a csv file.
-the csv separator is a ";" due to the string imported.
-    """
-    with open(my_csv_file, "a", encoding='utf-8', newline='') as mon_book:
-        mon_book_text_w = csv.writer(mon_book, delimiter=';')     
-        mon_book_text_w.writerow([mon_book_text])
-
-def read_writing_book_csv_file3(csv_file, ma_liste):
+def read_writing_book_csv_file(csv_file, ma_liste):
     """
     function to read & write the book informations into a csv file.
- 
-    ma_ligne[] is a dictionnary 
+
+    ma_ligne[] is a dictionnary
     the csv separator is a ";" due to the string imported.
 
     """
     abs_path = local_dir(csv_file)
-    
+
     with open(abs_path, 'a', encoding='utf-8', newline='') as csvfile:
-    
+
         writer = csv.DictWriter(
             csvfile,
             fieldnames=ma_liste.keys(),
             delimiter=";"
             )
-        writer.writeheader()
+        # writer.writeheader()
         writer.writerow(ma_liste)
-
-
-def f_test_nextpage(test_pageup):
-    """
-    """
-    pageup_link = ""
-    try:
-        test_pageup2 = test_pageup.find_all("li", {"class": "next"})[0]
-
-        if test_pageup2 != "" or not None:
-            pageup_link = test_pageup2.find("a").attrs['href']
-            return pageup_link
-        else:
-            return None
-
-    except ValueError:
-        print("pas de page supplémentaire ! rubrique suivante...")
 
 
 def new_next_page_link(next_url, next_page):
     """
 
 clean the url of the end to start while a "/" found
-concatenation the "next page name" 
-   
+concatenation the "next page name"
+
 """
     if next_page:
         i = 0
         for i in range(len(next_url)):
-            
+
             car = next_url[-i]
             if car == "/":
                 j = i-1
-        
+
                 new_next_url = next_url[:-j] + next_page
-                break     
+                break
             i += 1
         return new_next_url if new_next_url else None
-    
+
     else:
         return None, None
 
 
 def scrap_category_page(page_url):
-    """ 
-        return the list of books page's url for the given 
+    """
+        return the list of books page's url for the given
         category page
+        return books_urls
     """
     soup, r_status = my_soup(page_url)
     books_urls = [
-    a['href'].replace('../../../', page_url[:36])for a in 
-    soup.select(".image_container > a")]
+        a['href'].replace('../../../',page_url[:36])
+        for a in soup.select(".image_container > a")
+        ]
 
     next_a = soup.select_one('.next > a')
-    
+
     return books_urls, next_a["href"] if next_a else None
 
 
 def scrap_category_list(page_url):
     """
-    return de list of categorys of books
+    return one item of the list of book's categorys
 
     """
     soup, r_status = my_soup(page_url)
 
     category = soup.select('li > a')
     category1 = [a['href'].replace('../', page_url[:45]) for a in category]
-    
-    i = 0
+
     category2 = []
     for i in range(len(category1)-1):
         soup_1, statut_url = my_soup(category1[i])
         #  print(category1[i])
         #  print(i)
+
         if statut_url != 200:
             print(category1[i])
             print("erreur sur lien " + str(i))
-            #  del(category1[i])
+
         elif statut_url == 200:
-            category2.extend([category1[i]])   
-            
+            category2.extend([category1[i]])
+
         elif i == 0:
             break
         i += 1
-    #  next_a = soup.select_one('.next > a')
+
     return category2
 
 
-def create_csv_file(my_csv_file):
+def create_csv_file(my_csv_file, ma_liste):
     """
 creating csv files by personalized name of files
 with head of columns
 initalisation with head of columns
 
     """
-    entetes = [
-        "product_page_url",
-        "title",
-        "upc",
-        "category",
-        "number_available",
-        "review_rating",
-        "image_url",
-        "price_including_tax",
-        "price_excluding_tax",
-        "product_description"
-    ]
+
     abs_path = local_dir(my_csv_file)
 
     f = open(abs_path, 'w')
-    ligneEntete = ";".join(entetes) + "\n"
+    ligneEntete = ";".join(ma_liste.keys()) + "\n"
 
     f.write(ligneEntete)
     f.close()
@@ -308,20 +270,15 @@ def download_picture(url, folder="image"):
 
     """
     try:
-        
-        #  os.chdir('C:\\projet_OPC\\oc02\\oc_projet02\\' + folder + '\\')
-        os.chdir('.\\' + folder + '\\')
+
+        abs_path = local_dir(folder)
+        os.chdir(abs_path)
+
     except IOError:
+        print("directory or file error !")
         pass
-        
-    i = 0
-    name = url
-    for i in range(len(url)):
-        
-        if url[-i] == "/":
-            name = url[-i+1:]
-            break
-    i += 1
+
+    name = (url.split('/'))[7]
 
     with open(name, 'wb') as f:
         im = requests.get(url)
@@ -333,64 +290,63 @@ def main():
     """
 
     project 02 of openclassrooms learning session
-    this projet has for mission to developp an application 
+    this projet has for mission to developp an application
     to scrap a website http://books.toscrape.com/
     first  operation :  choose a book's page and scrap  defined words
-
 
         """
     book_cat_links = []
     list_cat_book_url = []
-    list_all_cat =[]
+    list_all_cat = []
+
     site_cible = "http://books.toscrape.com/"
     init_page_index = "index.html"
 
-    # category_section = "sequential-art_5"
-    site_cible_category_url = site_cible + "catalogue/category/books_1/" + init_page_index
-    # boot_cat_link catch the link of book into a category to scrap information
-    #  in the book page
+    site_cible_category_url = site_cible + "catalogue/category/books_1/"
+    site_cible_category_url = site_cible_category_url + init_page_index
     print(len(book_cat_links))
     #  print (book_cat_links)
-    i = 0
 
     list_all_cat = scrap_category_list(site_cible_category_url)
+
     for i in range(len(list_all_cat)):
         site_cible = list_all_cat[i]
         while True:
             next_page_url = None
-            
+
             if not site_cible:
                 break
             else:
                 books_list_url, next_page_url = scrap_category_page(site_cible)
                 list_cat_book_url.extend(books_list_url)
-                
+
             if not next_page_url:
                 break
             else:
                 # on prend url refaite de avec next_page_url
                 site_cible = new_next_page_link(site_cible, next_page_url)
         j = 0  # initialisation  pour permttre l'initialisation du csv
-        if len(list_cat_book_url) > 1:
+        if len(list_cat_book_url) > 0:
             for j in range(len(list_cat_book_url)):
-                
+
                 book_link_item = list_cat_book_url[j]
                 #  print(book_link_item)
 
-                book_writer, category, image_url, ma_ligne = f_scrap_my_Book(book_link_item)
+                ma_ligne = scrap_my_Book(book_link_item)
                 #  print(book_writer)
 
-                download_picture(image_url)
-                my_file = directory_results(category)
-                create_csv_file(my_file)
+                download_picture(ma_ligne["image url"])
+                my_file = directory_results(ma_ligne["category"])
+                if j == 0:
+                    create_csv_file(my_file, ma_ligne)
 
-                #f_read_writing_book_csv_file(book_writer, my_file)
-                read_writing_book_csv_file3(my_file, ma_ligne)
+                read_writing_book_csv_file(my_file, ma_ligne)
                 j += 1
         i += 1
         list_cat_book_url[:] = []
-        
-        print("c'est la fin " + str(len(list_cat_book_url)))
-    
+
+    print("This is the end of scrap session")
+
+
 if __name__ == '__main__':
     main()
