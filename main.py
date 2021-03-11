@@ -87,7 +87,7 @@ def scrap_my_Book(book_target):
 
     image_url = soup.find_all('img')[0]
     image_url = image_url.attrs['src']
-    image_url = book_target[:26] + image_url[5:]
+    image_url = book_target[:26] + image_url[6:]
 #  print(image_url)
 
     review_rating = soup.find('p', attrs={"star-rating"})['class'][1]
@@ -176,10 +176,10 @@ def read_writing_book_csv_file(csv_file, ma_liste):
 def new_next_page_link(next_url, next_page):
     """
 
-clean the url of the end to start while a "/" found
-concatenation the "next page name"
+    clean the url of the end to start while a "/" found
+    concatenation the "next page name"
 
-"""
+    """
     if next_page:
         i = 0
         for i in range(len(next_url)):
