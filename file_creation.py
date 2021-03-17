@@ -1,5 +1,6 @@
 import csv
 import os
+import requests
 
 
 def local_dir(folder):
@@ -10,7 +11,6 @@ def local_dir(folder):
 
     """
     root = os.path.dirname(__file__)
-    #  rel_path = os.path.join("..", my_csv_file)
     rel_path = folder
     abs_path = os.path.join(root, rel_path)
     return abs_path
@@ -45,7 +45,6 @@ def read_writing_book_csv_file(csv_file, ma_liste):
             fieldnames=ma_liste.keys(),
             delimiter=";"
             )
-        # writer.writeheader()
         writer.writerow(ma_liste)
 
 
