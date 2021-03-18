@@ -21,7 +21,7 @@ def directory_results(category, folder="data"):
     creating file file name with the directory location of the file
 
     """
-    my_csv_dir = 'data\\test\\'
+    my_csv_dir = 'data\\'
     my_csv_file_name = 'scrap_book_'
 
     result_file = my_csv_dir + my_csv_file_name + category + '.csv'
@@ -38,7 +38,7 @@ def read_writing_book_csv_file(csv_file, ma_liste):
     """
     abs_path = local_dir(csv_file)
 
-    with open(abs_path, 'a', encoding='utf-8', newline='') as csvfile:
+    with open(abs_path, 'a', encoding='UTF-8-sig', newline='') as csvfile:
 
         writer = csv.DictWriter(
             csvfile,
