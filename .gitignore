@@ -1,4 +1,4 @@
-data/
-venv/
-image/
+/data
+/venv
+/image
 
